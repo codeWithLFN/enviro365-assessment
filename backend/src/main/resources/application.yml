@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: enviro365-assessment
+
+  datasource:
+    url: jdbc:h2:mem:enviro365db
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+
+logging:
+    level:
+      root: INFO
+      org:
+        springframework:
+          web: DEBUG
+      com:
+        enviro:
+          assessment:
+            junior:
+              lufunonemudzivhadi: DEBUG
