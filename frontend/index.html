@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enviro365 Investments</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900">Enviro365 Investments</h1>
+      <p class="mt-2 text-sm text-slate-600">Portfolio dashboard, withdrawals, history, and CSV export.</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div class="lg:col-span-1 space-y-6">
+        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <h2 class="text-lg font-semibold text-slate-900">Load Portfolio</h2>
+          <p class="mt-1 text-sm text-slate-500">Enter an investor ID to load the portfolio details.</p>
+
+          <div class="mt-4 space-y-3">
+            <input
+              id="investorId"
+              type="number"
+              placeholder="Investor ID"
+              class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+            />
+            <button
+              id="loadPortfolioBtn"
+              class="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+            >
+              Load Portfolio
+            </button>
+          </div>
+        </section>
+
+        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <h2 class="text-lg font-semibold text-slate-900">Make Withdrawal</h2>
+          <p class="mt-1 text-sm text-slate-500">Submit a withdrawal request for an investment product.</p>
+
+          <form id="withdrawalForm" class="mt-4 space-y-3">
+            <input
+              id="productId"
+              type="number"
+              placeholder="Product ID"
+              class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              required
+            />
+            <input
+              id="amount"
+              type="number"
+              step="0.01"
+              placeholder="Amount"
+              class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              required
+            />
+            <button
+              type="submit"
+              class="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-emerald-700"
+            >
+              Submit Withdrawal
+            </button>
+          </form>
+
+          <div id="withdrawalMessage" class="mt-4 text-sm"></div>
+        </section>
+
+        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <h2 class="text-lg font-semibold text-slate-900">Export Statements</h2>
+          <p class="mt-1 text-sm text-slate-500">Download the CSV statement for the selected investor.</p>
+
+          <button
+            id="downloadCsvBtn"
+            class="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
+          >
+            Download CSV
+          </button>
+        </section>
+      </div>
+
+      <div class="lg:col-span-2 space-y-6">
+        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-slate-900">Portfolio Details</h2>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">Live API Data</span>
+          </div>
+
+          <div id="portfolioDetails" class="mt-4 text-sm text-slate-600">
+            No portfolio loaded yet.
+          </div>
+        </section>
+
+        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-slate-900">Investment Products</h2>
+            <span class="text-sm text-slate-500">Product list</span>
+          </div>
+
+          <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Product ID</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Product Name</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Product Type</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Balance</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableBody" class="divide-y divide-slate-100 bg-white">
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-slate-900">Withdrawal History</h2>
+            <span class="text-sm text-slate-500">Coming from backend data</span>
+          </div>
+
+          <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Withdrawal ID</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Product ID</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Amount</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Status</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawalHistoryBody" class="divide-y divide-slate-100 bg-white">
+                <tr>
+                  <td colspan="4" class="px-4 py-6 text-center text-slate-400">
+                    No withdrawal history loaded yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
