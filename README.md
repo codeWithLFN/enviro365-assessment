@@ -313,13 +313,21 @@ Suggested disclosure text:
 
 ## Screenshots
 
-Add screenshots of:
+Below are screenshots of the application UI:
 
-- Portfolio dashboard
-- Withdrawal form
-- Error handling example
-- Withdrawal history table
-- CSV export UI
+### Portfolio Dashboard
+![Portfolio Dashboard](pic/1.png)
+
+### Withdrawal Form
+![Additional View 1](pic/6.png)
+![Additional View 2](pic/6%20(2).png)
+
+
+### Withdrawal History Table
+![CSV Export](pic/4.png)
+
+### CSV Export UI
+![Error Handling](pic/5.png)
 
 The brief explicitly asks for a README with setup instructions, API documentation, AI usage disclosure, and screenshots.[1]
 
