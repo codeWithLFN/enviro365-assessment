@@ -31,7 +31,7 @@ public class PortfolioService {
                         .productType(product.getProductType())
                         .balance(product.getBalance())
                         .build())
-                .toList();
+                .collect(Collectors.toList());
 
         // build and return the portfolio response
         return PortfolioResponse.builder()
