@@ -9,41 +9,64 @@ const withdrawalForm = document.getElementById("withdrawalForm");
 const withdrawalMessage = document.getElementById("withdrawalMessage");
 const downloadCsvBtn = document.getElementById("downloadCsvBtn");
 
+const tabButtons = document.querySelectorAll(".tab-btn");
+const tabPanes = document.querySelectorAll(".tab-pane");
+
 let currentInvestorId = null;
 let withdrawalHistory = [];
+
+tabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const targetId = button.dataset.tab;
+
+    tabButtons.forEach((btn) => {
+      btn.classList.remove("bg-slate-900", "text-white");
+      btn.classList.add("bg-slate-100", "text-slate-700");
+    });
+
+    tabPanes.forEach((pane) => pane.classList.add("hidden"));
+
+    button.classList.remove("bg-slate-100", "text-slate-700");
+    button.classList.add("bg-slate-900", "text-white");
+
+    document.getElementById(targetId).classList.remove("hidden");
+  });
+});
 
 loadPortfolioBtn.addEventListener("click", loadPortfolio);
 withdrawalForm.addEventListener("submit", submitWithdrawal);
 downloadCsvBtn.addEventListener("click", downloadCsv);
 
+renderWithdrawalHistory();
+
 async function loadPortfolio() {
   const investorId = investorIdInput.value.trim();
 
+  clearWithdrawalMessage();
+
   if (!investorId) {
+    currentInvestorId = null;
     showPortfolioError("Please enter an investor ID.");
+    renderProducts([]);
     return;
   }
 
   try {
     const response = await fetch(`${API_BASE}/portfolio/${investorId}`);
+    const data = await parseResponseSafely(response);
 
     if (!response.ok) {
-      throw new Error("Failed to load portfolio.");
+      throw new Error(extractErrorMessage(data, "Failed to load portfolio."));
     }
 
-    const data = await response.json();
     currentInvestorId = investorId;
-
     renderPortfolio(data);
-    renderProducts(data.investmentProducts || []);
+    renderProducts(data?.investmentProducts || []);
+    switchToTab("portfolioTab");
   } catch (error) {
     currentInvestorId = null;
-    portfolioDetails.innerHTML = `
-      <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-        ${error.message}
-      </div>
-    `;
-    productsTableBody.innerHTML = "";
+    showPortfolioError(error.message);
+    renderProducts([]);
   }
 }
 
@@ -52,26 +75,26 @@ function renderPortfolio(data) {
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div class="rounded-xl bg-slate-50 p-4">
         <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Investor ID</p>
-        <p class="mt-1 text-sm font-semibold text-slate-900">${data.investorId ?? "-"}</p>
+        <p class="mt-1 text-sm font-semibold text-slate-900">${escapeHtml(data?.investorId ?? "-")}</p>
       </div>
       <div class="rounded-xl bg-slate-50 p-4">
         <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Full Name</p>
-        <p class="mt-1 text-sm font-semibold text-slate-900">${data.firstName ?? ""} ${data.lastName ?? ""}</p>
+        <p class="mt-1 text-sm font-semibold text-slate-900">${escapeHtml(`${data?.firstName ?? ""} ${data?.lastName ?? ""}`.trim() || "-")}</p>
       </div>
       <div class="rounded-xl bg-slate-50 p-4">
         <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Email</p>
-        <p class="mt-1 text-sm font-semibold text-slate-900">${data.email ?? "-"}</p>
+        <p class="mt-1 text-sm font-semibold text-slate-900">${escapeHtml(data?.email ?? "-")}</p>
       </div>
       <div class="rounded-xl bg-slate-50 p-4">
         <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Date of Birth</p>
-        <p class="mt-1 text-sm font-semibold text-slate-900">${data.dateOfBirth ?? "-"}</p>
+        <p class="mt-1 text-sm font-semibold text-slate-900">${escapeHtml(data?.dateOfBirth ?? "-")}</p>
       </div>
     </div>
   `;
 }
 
 function renderProducts(products) {
-  if (!products.length) {
+  if (!products || !products.length) {
     productsTableBody.innerHTML = `
       <tr>
         <td colspan="4" class="px-4 py-6 text-center text-slate-400">
@@ -82,12 +105,12 @@ function renderProducts(products) {
     return;
   }
 
-  productsTableBody.innerHTML = products.map(product => `
+  productsTableBody.innerHTML = products.map((product) => `
     <tr class="hover:bg-slate-50">
-      <td class="px-4 py-3 text-slate-700">${product.productId ?? "-"}</td>
-      <td class="px-4 py-3 font-medium text-slate-900">${product.productName ?? "-"}</td>
-      <td class="px-4 py-3 text-slate-700">${product.productType ?? "-"}</td>
-      <td class="px-4 py-3 text-slate-700">${product.balance ?? "-"}</td>
+      <td class="px-4 py-3 text-slate-700">${escapeHtml(product?.productId ?? "-")}</td>
+      <td class="px-4 py-3 font-medium text-slate-900">${escapeHtml(product?.productName ?? "-")}</td>
+      <td class="px-4 py-3 text-slate-700">${escapeHtml(product?.productType ?? "-")}</td>
+      <td class="px-4 py-3 text-slate-700">${escapeHtml(product?.balance ?? "-")}</td>
     </tr>
   `).join("");
 }
@@ -100,6 +123,7 @@ async function submitWithdrawal(event) {
 
   if (!productId || !amount) {
     showWithdrawalMessage("Please enter product ID and amount.", false);
+    switchToTab("withdrawalTab");
     return;
   }
 
@@ -115,28 +139,30 @@ async function submitWithdrawal(event) {
       })
     });
 
-    const data = await parseJsonSafely(response);
+    const data = await parseResponseSafely(response);
 
     if (!response.ok) {
-      throw new Error(data?.message || "Withdrawal failed.");
+      throw new Error(extractErrorMessage(data, "Withdrawal failed."));
     }
 
     showWithdrawalMessage(
-      `Withdrawal submitted successfully. Withdrawal ID: ${data.withdrawalId ?? "N/A"}`,
+      `Withdrawal submitted successfully. Withdrawal ID: ${data?.withdrawalId ?? "N/A"}`,
       true
     );
 
     withdrawalHistory.unshift({
-      withdrawalId: data.withdrawalId ?? "-",
+      withdrawalId: data?.withdrawalId ?? "-",
       productId: productId,
       amount: amount,
-      status: data.status ?? "PENDING"
+      status: data?.status ?? "PENDING"
     });
 
     renderWithdrawalHistory();
     withdrawalForm.reset();
+    switchToTab("historyTab");
   } catch (error) {
     showWithdrawalMessage(error.message, false);
+    switchToTab("withdrawalTab");
   }
 }
 
@@ -152,14 +178,14 @@ function renderWithdrawalHistory() {
     return;
   }
 
-  withdrawalHistoryBody.innerHTML = withdrawalHistory.map(item => `
+  withdrawalHistoryBody.innerHTML = withdrawalHistory.map((item) => `
     <tr class="hover:bg-slate-50">
-      <td class="px-4 py-3 text-slate-700">${item.withdrawalId}</td>
-      <td class="px-4 py-3 text-slate-700">${item.productId}</td>
-      <td class="px-4 py-3 text-slate-700">${item.amount}</td>
+      <td class="px-4 py-3 text-slate-700">${escapeHtml(item.withdrawalId)}</td>
+      <td class="px-4 py-3 text-slate-700">${escapeHtml(item.productId)}</td>
+      <td class="px-4 py-3 text-slate-700">${escapeHtml(item.amount)}</td>
       <td class="px-4 py-3">
-        <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
-          ${item.status}
+        <span class="${getStatusBadgeClass(item.status)}">
+          ${escapeHtml(item.status)}
         </span>
       </td>
     </tr>
@@ -170,7 +196,8 @@ async function downloadCsv() {
   const investorId = currentInvestorId || investorIdInput.value.trim();
 
   if (!investorId) {
-    alert("Please load or enter an investor ID first.");
+    showWithdrawalMessage("Please load or enter an investor ID first.", false);
+    switchToTab("exportTab");
     return;
   }
 
@@ -178,7 +205,8 @@ async function downloadCsv() {
     const response = await fetch(`${API_BASE}/statements/export?investorId=${investorId}`);
 
     if (!response.ok) {
-      throw new Error("Failed to download CSV.");
+      const data = await parseResponseSafely(response);
+      throw new Error(extractErrorMessage(data, "Failed to download CSV."));
     }
 
     const blob = await response.blob();
@@ -190,10 +218,13 @@ async function downloadCsv() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
     window.URL.revokeObjectURL(blobUrl);
+
+    showWithdrawalMessage("CSV downloaded successfully.", true);
+    switchToTab("exportTab");
   } catch (error) {
-    alert(error.message);
+    showWithdrawalMessage(error.message, false);
+    switchToTab("exportTab");
   }
 }
 
@@ -205,21 +236,104 @@ function showWithdrawalMessage(message, success) {
   withdrawalMessage.textContent = message;
 }
 
+function clearWithdrawalMessage() {
+  withdrawalMessage.className = "mt-4 text-sm";
+  withdrawalMessage.textContent = "";
+}
+
 function showPortfolioError(message) {
   portfolioDetails.innerHTML = `
     <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-      ${message}
+      ${escapeHtml(message)}
     </div>
   `;
 }
 
-async function parseJsonSafely(response) {
-  const text = await response.text();
-  if (!text) return null;
+function switchToTab(targetId) {
+  tabButtons.forEach((btn) => {
+    btn.classList.remove("bg-slate-900", "text-white");
+    btn.classList.add("bg-slate-100", "text-slate-700");
+  });
+
+  tabPanes.forEach((pane) => pane.classList.add("hidden"));
+
+  const activeButton = document.querySelector(`[data-tab="${targetId}"]`);
+  const activePane = document.getElementById(targetId);
+
+  if (activeButton) {
+    activeButton.classList.remove("bg-slate-100", "text-slate-700");
+    activeButton.classList.add("bg-slate-900", "text-white");
+  }
+
+  if (activePane) {
+    activePane.classList.remove("hidden");
+  }
+}
+
+async function parseResponseSafely(response) {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
 
   try {
-    return JSON.parse(text);
+    const text = await response.text();
+    return text ? { message: text } : null;
   } catch {
     return null;
   }
+}
+
+function extractErrorMessage(data, fallbackMessage) {
+  if (!data) {
+    return fallbackMessage;
+  }
+
+  if (typeof data === "string" && data.trim()) {
+    return data;
+  }
+
+  if (data.message && typeof data.message === "string") {
+    return data.message;
+  }
+
+  if (data.errors && typeof data.errors === "object") {
+    const validationMessage = Object.values(data.errors)
+      .filter(Boolean)
+      .join(", ");
+
+    if (validationMessage) {
+      return validationMessage;
+    }
+  }
+
+  return fallbackMessage;
+}
+
+function getStatusBadgeClass(status) {
+  const normalizedStatus = String(status || "").toUpperCase();
+
+  if (normalizedStatus === "APPROVED") {
+    return "inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700";
+  }
+
+  if (normalizedStatus === "REJECTED" || normalizedStatus === "FAILED") {
+    return "inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700";
+  }
+
+  return "inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700";
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
