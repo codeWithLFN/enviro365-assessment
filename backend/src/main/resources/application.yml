@@ -13,22 +13,27 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
+
+  sql:
+    init:
+      mode: always
 
   h2:
     console:
       enabled: true
 
 logging:
-    level:
-      root: INFO
-      org:
-        springframework:
-          web: DEBUG
-      com:
-        enviro:
-          assessment:
-            junior:
-              lufunonemudzivhadi: DEBUG
+  level:
+    root: INFO
+    org:
+      springframework:
+        web: DEBUG
+    com:
+      enviro:
+        assessment:
+          junior:
+            lufunonemudzivhadi: DEBUG

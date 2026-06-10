@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enviro365 Investments</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900">Enviro365 Investments</h1>
+      <p class="mt-2 text-sm text-slate-600">Investor dashboard and withdrawal management.</p>
+    </div>
+
+    <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <input
+          id="investorId"
+          type="number"
+          placeholder="Enter investor ID"
+          class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+        />
+        <button
+          id="loadPortfolioBtn"
+          class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white hover:bg-slate-700"
+        >
+          Load Portfolio
+        </button>
+      </div>
+    </section>
+
+    <div class="mt-6 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+      <div class="border-b border-slate-200">
+        <div class="flex flex-wrap gap-2 p-4">
+          <button class="tab-btn rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white" data-tab="portfolioTab">Portfolio</button>
+          <button class="tab-btn rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700" data-tab="withdrawalTab">Withdrawal</button>
+          <button class="tab-btn rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700" data-tab="historyTab">History</button>
+          <button class="tab-btn rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700" data-tab="exportTab">Export</button>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <div class="tab-pane" id="portfolioTab">
+          <h2 class="mb-4 text-lg font-semibold text-slate-900">Portfolio Details</h2>
+          <div id="portfolioDetails" class="mb-6 text-sm text-slate-600">
+            No portfolio loaded yet.
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Product ID</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Product Name</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Product Type</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Balance</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableBody" class="divide-y divide-slate-100 bg-white"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-pane hidden" id="withdrawalTab">
+          <h2 class="mb-4 text-lg font-semibold text-slate-900">Make Withdrawal</h2>
+          <form id="withdrawalForm" class="space-y-4">
+            <input
+              id="productId"
+              type="number"
+              placeholder="Product ID"
+              class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              required
+            />
+            <input
+              id="amount"
+              type="number"
+              step="0.01"
+              placeholder="Amount"
+              class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              required
+            />
+            <button
+              type="submit"
+              class="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white hover:bg-emerald-700"
+            >
+              Submit Withdrawal
+            </button>
+          </form>
+          <div id="withdrawalMessage" class="mt-4 text-sm"></div>
+        </div>
+
+        <div class="tab-pane hidden" id="historyTab">
+          <h2 class="mb-4 text-lg font-semibold text-slate-900">Withdrawal History</h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Withdrawal ID</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Product ID</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Amount</th>
+                  <th class="px-4 py-3 text-left font-medium text-slate-600">Status</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawalHistoryBody" class="divide-y divide-slate-100 bg-white">
+                <tr>
+                  <td colspan="4" class="px-4 py-6 text-center text-slate-400">No withdrawal history loaded yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-pane hidden" id="exportTab">
+          <h2 class="mb-4 text-lg font-semibold text-slate-900">Export CSV</h2>
+          <p class="mb-4 text-sm text-slate-600">Download statements for the currently selected investor.</p>
+          <button
+            id="downloadCsvBtn"
+            class="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            Download CSV
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
