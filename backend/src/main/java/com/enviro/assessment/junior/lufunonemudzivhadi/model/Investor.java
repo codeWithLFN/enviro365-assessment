@@ -20,7 +20,6 @@ public class Investor {
     private String firstname;
     private String lastname;
     private String email;
-    private String password;
     private LocalDate dateOfBirth;
     @OneToMany(mappedBy = "investor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<InvestmentProduct> investmentProducts;
